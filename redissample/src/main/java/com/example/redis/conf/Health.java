@@ -20,15 +20,15 @@ public class Health {
   private RedisTemplate<String, String> template;
 
   @PostConstruct
-  public void check(){
-    ValueOperations<String,String> ops=template.opsForValue();
-    for(int i=0;i<10;i++){
-      ops.set("KEY"+i,"VALUE"+i);
+  public void check() {
+    ValueOperations<String, String> ops = template.opsForValue();
+    for (int i = 0; i < 10; i++) {
+      ops.set("KEY" + i, "VALUE" + i);
     }
 
     System.out.println("\nPRINTING KEYS ...");
     rcf.getClusterConnection().keys("*".getBytes()).stream().forEach(
-            (k)->System.out.println(new String(k))
+            (k) -> System.out.println(new String(k))
     );
   }
 }

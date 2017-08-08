@@ -7,12 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.InputStream;
 
 @RunWith(SpringRunner.class)
@@ -25,18 +21,18 @@ public class RedissampleApplicationTests {
   private RedisTemplate<String, String> template;
 
 
-	@Test
-	public void testRedisBinaryData() throws Exception {
-    byte[] sz=new byte[16867024];//file size 16 MB nearly
-    InputStream in=this.getClass().getResourceAsStream("/testimage.jpg");
+  @Test
+  public void testRedisBinaryData() throws Exception {
+    byte[] sz = new byte[16867024];//file size 16 MB nearly
+    InputStream in = this.getClass().getResourceAsStream("/testimage.jpg");
     in.read(sz);
-    byte[] key="image".getBytes();
-    rcf.getClusterConnection().set(key,sz);
+    byte[] key = "image".getBytes();
+    rcf.getClusterConnection().set(key, sz);
     //now read and compare
-    byte[] fromRedis=rcf.getClusterConnection().get(key);
+    byte[] fromRedis = rcf.getClusterConnection().get(key);
 
-    Assert.assertArrayEquals( sz, fromRedis);
+    Assert.assertArrayEquals(sz, fromRedis);
 
-	}
+  }
 
 }
