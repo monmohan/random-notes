@@ -1,0 +1,16 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Resources:
+  SimpleFunction:
+    Properties:
+      CodeUri: s3://msingh-code/b99793ddaf5132c7455099ab96223c01
+      Events:
+        GetResource:
+          Properties:
+            Method: get
+            Path: /orgunits/{ou_urn}
+          Type: Api
+      Handler: index.handler
+      Role: arn:aws:iam::831789486221:role/msingh-lambda-execute-role
+      Runtime: nodejs8.10
+    Type: AWS::Serverless::Function
+Transform: AWS::Serverless-2016-10-31

@@ -1,0 +1,110 @@
+---
+swagger: "2.0"
+info:
+  description: UDP v0 REST endpoint defintion.
+  version: "0.1"
+  title: UDP REST APIs
+host: developer.api.autodesk.com
+basePath: /
+schemes:
+- https
+consumes:
+- application/json
+produces:
+- application/json
+paths:
+  /orgunits/{ou_urn}:
+    get:
+      tags:
+      - Organization Unit
+      description: Get an Organization Unit.
+      operationId: get_orgunit
+      parameters:
+      - name: ou_urn
+        in: path
+        description: The URN of an Organization Unit.
+        required: true
+        type: string
+      responses:
+        200:
+          description: Successfully retrieved an Organization Unit.
+          schema:
+            $ref: '#/definitions/OrgUnit'
+        404:
+          description: The specified resource not found.
+          schema:
+            $ref: '#/definitions/ApiError'
+      x-amazon-apigateway-integration:
+       uri: 
+          Fn::Sub: "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetOUFunction.Arn}/invocations"
+       httpMethod: POST
+       type: aws_proxy
+definitions:
+  Links:
+    type: array
+    items:
+      $ref: '#/definitions/LinksInner'
+  OrgUnitChild:
+    type: object
+    required:
+    - name
+    - parentOrgUnitUrn
+    - schemaType
+    - urn
+    properties:
+      schemaType:
+        type: string
+      urn:
+        type: string
+      name:
+        type: string
+      parentOrgUnitUrn:
+        type: string
+      _links:
+        $ref: '#/definitions/Links'
+  OrgUnit:
+    allOf:
+    - $ref: '#/definitions/OrgUnitChild'
+    - {}
+  Error:
+    type: object
+    required:
+    - code
+    - title
+    properties:
+      code:
+        type: string
+      title:
+        type: string
+      detail:
+        type: string
+  ApiError:
+    type: object
+    properties:
+      error:
+        $ref: '#/definitions/Error'
+  LinksInner:
+    required:
+    - href
+    - rel
+    properties:
+      rel:
+        type: string
+      href:
+        type: string
+parameters:
+  ou_urn:
+    name: ou_urn
+    in: path
+    description: The URN of an Organization Unit.
+    required: true
+    type: string
+responses:
+  bad_input:
+    description: Operation failed because of bad user input.
+    schema:
+      $ref: '#/definitions/ApiError'
+  not_found:
+    description: The specified resource not found.
+    schema:
+      $ref: '#/definitions/ApiError'

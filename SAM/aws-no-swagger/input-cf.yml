@@ -1,0 +1,16 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Resources:
+  SimpleFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: index.handler
+      Runtime: nodejs8.10
+      Role: "arn:aws:iam::831789486221:role/msingh-lambda-execute-role"
+      Events:
+        GetResource:
+          Type: Api
+          Properties:
+            Path: /orgunits/{ou_urn}
+            Method: get
+      
