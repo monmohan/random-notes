@@ -19,33 +19,52 @@ let pushToStreamBulk = function () {
         StreamName: 'mvstream1'
     };
     kinesis.putRecords(params, function (err, data) {
-        if (err) console.log(err, err.stack); // an error occurred
-        else console.log(data);           // successful response
+        if (err) console.log(err, err.stack); 
+        else console.log(data);           
     });
 }
-const MAX_DATA=5
+const MAX_DATA=10
+
 /**
  * Ordering is guarnteed
  * @param {integer} recordNum 
  * @param {String} seqNum 
  */
-let pushToStreamOrdered = function (recordNum, seqNum) {
+let pushToStreamOrdered = function (recordNum, seqNum, shardId) {
     if (recordNum === MAX_DATA) return;
+    
     let params = {
-        Data: new Buffer('Producer Record-' + recordNum),
-        PartitionKey: 'Shard-' + recordNum,
+        Data: new Buffer(shardId+'-:-Producer Record-:-' + recordNum),
+        PartitionKey: 'PartitionKey-' + recordNum,
         StreamName: 'mvstream1',
-        SequenceNumberForOrdering: seqNum
-
+        SequenceNumberForOrdering: seqNum,
+        ExplicitHashKey:shardId
     };
 
     kinesis.putRecord(params, function (err, data) {
         if (err) console.log(err, err.stack); // an error occurred
         else {
             console.log(data); //success
-            pushToStreamOrdered(recordNum + 1, data.SequenceNumber)
+            pushToStreamOrdered(recordNum + 1, data.SequenceNumber,shardId)
         }
     });
 
 }
-pushToStreamOrdered(1,'1');
+
+/**
+ * Ordering per shard
+ * @param {integer} recordNum 
+ * @param {String} seqNum 
+ */
+let pushMultiShardOrdered = function (shards) {
+    shards.forEach(function(shardId){
+        pushToStreamOrdered(1,'1',shardId);
+    })
+    
+
+}
+
+//Use only one shard
+//pushMultiShardOrdered(['1'])
+//Use two shards
+pushMultiShardOrdered(['100','200'])
