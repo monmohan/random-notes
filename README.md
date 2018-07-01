@@ -1,2 +1,3 @@
 # aws-examples
-Examples, code samples using AWS services with golang, java
+Examples, code samples for different AWS Services.
+
