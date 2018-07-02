@@ -86,7 +86,8 @@ let pushMultiShardOrdered = function (shards) {
             }
    The explicit hash value should be set in range of this HashKey (subtract 1)
    so that the record is routed to correct shard.
-   Careful to pick only shards which are open
+   Careful to pick only shards which are open. The open shards are one 
+   which don't hvae a "EndingSequenceNumber" set in the JSON
  */
 pushMultiShardOrdered(["113427455640312821154458202477256070483",
 "340282366920938463463374607431768211454",
