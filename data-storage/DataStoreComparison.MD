@@ -1,20 +1,19 @@
-Notes: data store solutions
 RDBMS (MySQL)
-Picking MySQL since its the most popular choice
-Used by some of the largest content services in the world today e.g. Facebook, Quora, You Tube, Twitter  and GitHub to name a few
-https://www.mysql.com/customers/
-Pros
-It’s robust, replication works and it’s easy to use and run
-AWS Aurora takes this a step further making it easy to do routine maintenance tasks like provisioning, patching, backup, recovery etc.
-If we partition the data at the application level, MySQL scalability isn't an issue.
-Choice of using simple application based routing or even off the shelf frameworks like MySQL Fabric, MaxScale, ProxySQL , MySQLRouter and so on
-Infact one can go a long way by simply "scaling up" the instance with cpu cores and tons of ram + multiple read replicas. Add a layer of distributed caching like MemCache and DB has to deal mostly with writes. 
-Tonnes of tribal knowledge available. Easy to find expert DBAs
-Continuous improvement with contributions coming in from large customers
+* Used by some of the largest content services in the world today e.g. Facebook, Quora, You Tube, Twitter  and GitHub to name a few
+** https://www.mysql.com/customers/
 
+* It’s robust, replication works and it’s easy to use and run
+** AWS Aurora takes this a step further making it easy to do routine maintenance tasks like provisioning, patching, backup, recovery etc.
+* If we partition the data at the application level, MySQL scalability isn't an issue.
+* When sharding there is choice of using simple application based routing or one of many off-the-shelf frameworks like MySQL Fabric, MaxScale, ProxySQL , MySQLRouter and so on
+* Infact one can go a long way by simply "scaling up" the instance with cpu cores and tons of ram + multiple read replicas. Add a layer of distributed caching like MemCache and DB has to deal mostly with writes. 
+* Tonnes of tribal knowledge available. Easy to find expert DBAs
+* Continuous improvement with contributions coming in from large customers
 
+```
 The primary online data store for an application is the worst place to take a risk with new technology. If you lose your database or there's corruption, it's a disaster that could be impossible to recover from. If you're not the developer of one of these new databases, and you're one of a very small number of companies using them at scale in production, you're at the mercy of the developer to fix bugs and handle scalability issues as they come up.
 Adam D'Angelo Quora CEO and Former Facebook CTO
+```
 
 NoSQL
 Lets pick the most popular ones Cassandra and Dynamo 
