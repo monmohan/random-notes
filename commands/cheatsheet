@@ -1,0 +1,113 @@
+$ brew info <name>
+Tells how to run etc.
+
+$ git stash pop 
+Get the stashed data back to working directory
+
+$git stash drop <id>
+drop the stash by id
+
+$lsof -n -iTCP:$PORT | grep LISTEN
+Find the process listening on a particular port
+
+find . -exec grep chrome {} \;
+or
+
+find . -exec grep chrome {} +
+find will execute grep and will substitute {} with the filename(s) found. The difference between ; and + is that with ; a single grep command for each file is executed whereas with + as many files as possible are given as parameters to grep at once
+
+find . -type f -perm +111
+Find all executable files
+
+Run commnand in loop
+for i in {1..30}; do /Users/monmohans/bin/cpdm_tests.sh; done
+
+To view history of file in git
+gitk <filename>
+
+#Create virtual interfaces
+sudo ifconfig lo0 alias 127.0.0.2 up
+
+#Remove an env var
+unset <varname>
+
+#docker
+Your container will exit as the command you gave it will end. Use the following options to keep it live:
+
+-i Keep STDIN open even if not attached.
+-t Allocate a pseudo-TTY.
+So your new run command is:
+
+docker run -it -d shykes/pybuilder bin/bash
+If you would like to attach to an already running container:
+
+docker exec -it CONTAINER_ID /bin/bash
+In these examples /bin/bash is used as the command.
+
+docker ps -a 
+for all containers
+
+#bash
+for (( c=1; c<=5; c++ )); do echo "Welcome $c times"; done;
+
+#Remove virtual host only adapters for docker-machine
+VBoxManage hostonlyif remove vboxnet<number>
+
+#run simple web server serving files from directory
+$ python -m SimpleHTTPServer
+
+PYTHON Virtual Environment
+Create a virtual environment for a project:
+$ cd my_project_folder
+$ virtualenv venv
+To begin using the virtual environment, it needs to be activated:
+$ source venv/bin/activate
+Install packages as usual, for example:
+
+$ pip install requests
+If you are done working in the virtual environment for the moment, you can deactivate it:
+$ deactivate
+
+#Gradle build a simple java project
+./gradlew init --type java-library
+
+#Brew start as service
+brew services start memcached
+
+#Cherrypick a commit
+Go to the branch where commit needs to be added
+git cherry-pick 746f2e6720f3f2e6fa513b5c56f81621711c27a2 -x
+
+For a list of files to be pushed, run:
+git diff --stat --cached [remote/branch]
+example:
+git diff --stat --cached origin/master
+For the code diff of the files to be pushed, run:
+
+git diff [remote repo/branch]=======
+
+#find size of a folder
+du -d 0 -h <folder>
+
+#copy from docker to local
+docker cp <containerId>:/file/path/within/container /host/path/target
+
+#ping dig tcpdump
+ping -R -c 1 -n 205.254.211.254
+dig , host , tcpdump
+
+
+# my ip
+ifconfig en0 | grep "inet " | cut -d " " -f2
+
+#zip all files in folder
+zip <zipname> *
+
+# aws s3 list objects
+aws s3api list-objects --bucket udemy.course.bucket
+
+
+
+
+
+
