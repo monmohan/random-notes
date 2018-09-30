@@ -1,0 +1,80 @@
+IO cost in aurora is much lower
+
+in dyanmo, when the table gets partitioned then your IO gets partitioned (hot partition can increase IO requirement)
+
+Aurora is charged based on used IO, not provisioned IO
+
+Large AWS Customers have reported a decrease in operational cost of up to 40% by moving from Dynamo to Aurora
+
+Ideas from NoSQL also getting implemented in SQL (quorum reads in Aurora for example)
+
+
+
+
+
+
+DynamoDB accellarator (DAX) managed, clustered in-memory cache for DyanmoDB for read heavy and burst workloads.
+DAX is write through caching, data written to cache as well as DB. Allows you also to point DDB API calls to DAX cluster (returned if present). If not present, then it calls DDB eventually consistent read, adds to cache and returns. 
+Advantages
+Reduced read load on DDB
+May be able to reduce provisioned read capacity
+
+Cassandra - 
+
+
+Fully managed
+Scale horizontally
+Built for denormalized hierarchichal views of data, these are the instantiated views 
+Essentially a Key value store that supports document attribute type
+Partition key = Mandatory key value access pattern , determines data distribution
+Sort key = Optional, Model 1:N relationship
+Scales to any workload
+Eventually and strictly consistent reads
+Provides throughput control/knobs - Independent Read capacity and Write capacity
+Partitioning Math
+1) By Capactity = (Total RCU)/3000 + (Total WCU)/1000
+2) By Size = Total Size/10 GB
+Total partitions = MAX(By Capacity, By Size)
+Example
+Table Size = 8GB, RCU=5K, WCU=0.5K
+= 3 Partition
+Why do you care?
+RCU and WCU are uniformly spread across partitions - So the RCU in above case would be 5K/3= 1.7K per partition and WCU=0.5/3=166.7 and data per partition = 10/3= 3.33 GB
+Throttling
+If sustained throughput goes beyond provisioned throughput then throttling is done. 
+Caused by non uniform workloads that cause hot keys
+Some design patterns , in case of time series data want to use table per time period
+Number 1 guideline : Create tables where the partition key element has a large number of distinct values and values are requested fairly and uniformly as randomly as possible
+Very similar to Cassandra in terms of data modeling - Table per Query , aggregate and keep everything together in one table which can be read in one shot (customer and orders together)
+Data modelling
+1) Hierarchical data structure as items - 1:N represented via sort key. index anything and scales to any size
+2) Store hierarchy as json attributes - Store JSON directly attributes. Indexing support only using DynamoDB streams, can be helpful in reducing WCU. Limited to 400KB total size
+very powerful execution framework around DynamoDB = DynamoDB stream + Lambda - Create near real time aggregations to build say BI or reporting tuned stored on your data
+Design patterns stemming from the data uniformity
+1) Shard write heavy partition keys
+2) Create table per "time period" for time series data 
+3) Create Secondary indexes and run scheduled Lambda's as stored procedure
+Lambda as stored procedure but superior , no impact on data server
+Cache for read heavy lods like product catalog.
+Lightweight Transaction support using conditional writes.
+Configure secondary index with projections to create indexes that contain onlt the data you want and better utilize RCU
+GSI costs, every time you update the main table, you pay WCU on the GSI
+
+
+Connecting to the Database	
+RDBMS: persistent network connection with the database. Queries are analyzed to create a plan and then executed. 
+DynamoDB no persistent network connections, using HTTP(S) requests and responses for interaction. No complex execution plan needed.
+DynamoDB provides native support for documents, using JSON. This makes DynamoDB ideal for storing semi-structured data, such as Tags. You can also retrieve and manipulate data from within JSON documents.
+DDB does not support table joins. 
+GSI provisioned throughput is separate from the provisioned throughput settings of the table.
+When creating GSI : Part of this operation involves backfilling data from the table into the new index. During backfilling, the table remains available. However, the index is not ready until its Backfilling attribute changes from true to false. You can use the DescribeTable action to view this attribute.
+In DynamoDB, you use the UpdateItem action to modify a single item. (If you want to modify multiple items, you must use multiple UpdateItem operations.UpdateItem behaves like an "upsert" operation: The item is updated if it exists in the table, but if not, a new item is added (inserted). UpdateItem supports conditional writes, where the operation succeeds only if a specific ConditionExpression evaluates to true. 
+Design
+Keep related data together.   Research on routing-table optimization 20 years ago found that "locality of reference" was the single most important factor in speeding up response time: keeping related data together in one place. This is equally true in NoSQL systems today, where keeping related data in close proximity has a major impact on cost and performance. Instead of distributing related data items across multiple tables, you should keep related items in your NoSQL system as close together as possible.
+
+As a general rule, you should maintain as few tables as possible in a DynamoDB application. As emphasized earlier, most well designed applications require only one table, unless there is a specific reason for using multiple tables.
+
+Exceptions are cases where high-volume time series data are involved, or datasets that have very different access patterns—but these are exceptions. A single table with inverted indexes can usually enable simple queries to create and retrieve the complex hierarchical data structures required by your application.
+Data shape: Instead of reshaping data when a query is processed (as an RDBMS system does), a NoSQL database organizes data so that its shape in the database corresponds with what will be queried. This is a key factor in increasing speed and scalability.
+
+

@@ -12,6 +12,7 @@ A Comparison of different widely used data storage technologies - SQL (focussed 
   * Redundant storage across AZ, multiple Read replicas with load balancing
   * Autoscaling storage, SSD based virtualized storage
   * Automated routine tasks like provisioning, patching, backup, failover, recovery etc.
+  * [Better performance characteristics](https://d1.awsstatic.com/product-marketing/Aurora/RDS_Aurora_Performance_Assessment_Benchmarking_v1-2.pdf) than standard MySQL
   * DR - Support replicas in differen region
 
 * MySQL scalability isn't an issue, if you partition the data at the application level. And there are many ways to do it -
@@ -25,17 +26,18 @@ A Comparison of different widely used data storage technologies - SQL (focussed 
 * Tonnes of tribal knowledge available. Easy to find expert DBAs
 
 * Huge commuity, continuous improvement of the tech stack with contributions coming in from large adopters
+  * e.g. New features like JSON type to support documet style storge, index-able virtual generated columns 
 
 
-> The primary online data store for an application is the worst place to take a risk with new technology. If you lose your database or there's corruption, it's a disaster that could be impossible to recover from. If you're not the developer of one of these new databases, and you're one of a very small number of companies using them at scale in production, you're at the mercy of the developer to fix bugs and handle scalability issues as they come up. 
-Adam D'Angelo Quora CEO and Former Facebook CTO
+
+> The primary online data store for an application is the worst place to take a risk with new technology. If you lose your database or there's corruption, it's a disaster that could be impossible to recover from. If you're not the developer of one of these new databases, and you're one of a very small number of companies using them at scale in production, you're at the mercy of the developer to fix bugs and handle scalability issues as they come up.     
+Adam D'Angelo Quora CEO and former Facebook CTO
 
 
 ## Cassandra
 
 * Although not as common as MySQL, Cassandra is being used at large scale by few customers 		
-  * Netflix run hunderds of clusters with over 10000 nodes and Petabytes of Data serving millions of transactions per second
-  * Netflix uses it to store customer details viewing history bookmarks billing and payment
+  * Netflix run hunderds of clusters with over 10000 nodes and Petabytes of Data serving millions of transactions per second. Uses it to store customer details, viewing history, bookmarks and even billing and payment
   * Apple reported to have 75000 Nodes with 10 PB of data (they may have moved to different database now)
 * Capacity scales linearly, can use commodity hardware
 * Fault tolerant
@@ -56,9 +58,9 @@ Adam D'Angelo Quora CEO and Former Facebook CTO
 
 
 Dynamo DB
+ 
 
-
-Partitioned from ground up (both have fairly similar concept of partition and sort key)
+ (both have fairly similar concept of partition and sort key)
 Work very well for key-lookup based workloads.
 Global and local Secondary indexes (in Dynamo) attempt to solve some of these issues.
 Cassandra : 
@@ -85,12 +87,26 @@ Spanner is Google’s scalable, multi-version, globallydistributed, and synchron
 
 
 Appendix
+
 Basic rules of data modeling in Cassandra involve manually denormalizing data into separate tables based on the queries that will be run against that table. Currently, the only way to query a column without specifying the partition key is to use secondary indexes, but they are not a substitute for the denormalization of data into new tables as they are not fit for high cardinality data. High cardinality secondary index queries often require responses from all of the nodes in the ring, which adds latency to each request. Instead, client-side denormalization and multiple independent tables are used, which means that the same code is rewritten for many different users. In 3.0, Cassandra will introduce a new feature called Materialized Views. Materialized views handle automated server-side denormalization, removing the need for client side handling of this denormalization and ensuring eventual consistency between the base and view data. This denormalization allows for very fast lookups of data in each view using the normal Cassandra read path.
+
 In Cassandra everything is a write including logical deletion of data which results in tombstones.
+
+You can create an Amazon Aurora MySQL DB cluster as a Read Replica in a different AWS Region than the source DB cluster. Taking this approach can improve your disaster recovery capabilities, let you scale read operations into an AWS Region that is closer to your users, and make it easier to migrate from one AWS Region to another.
+
+https://www.datastax.com/customers
+Relatively immutable data, minimal updates and deletions (think time series, Sensor data etc.)
+
+Aurora
+Not having to make decisions on how much storage to allocate to the database: Deciding how much storage to allocate to your database, especially for production workloads is one decision that game developers (or developers and DBAs in general) don’t want to make. Allocate too little, and you end up running out of space when you need it the most, requiring you to put your game in maintenance mode while you upgrade. Allocate too much, and you are wasting money. With Aurora, data is stored in a cluster volume, which is a single, virtual volume that utilizes solid state disk (SSD) drives. A cluster volume consists of copies of the data across multiple Availability Zones in a single region. Aurora cluster volumes automatically grow as the amount of data in your database increases. An Aurora cluster volume can grow to a maximum size of 64 terabytes (TB). Table size is limited to the size of the cluster volume. That is, the maximum table size for a table in an Aurora DB cluster is 64 TB. Even though an Aurora cluster volume can grow to up to 64 TB, you are only charged for the space that you use in an Aurora cluster volume. You can start with a volume as small as 10 GB.
+Unique Read Replicas: Aurora’s Read Replicas use the same underlying cluster volume as that of the primary. This approach allows for a reduced replication lag even when the replicas are launched in different Availability Zones. Aurora supports up to 15 replicas with minimal impact on the performance of write operations. In contrast, MySQL supports up to 5 replicas, which can impact the performance of write operations and exhibit some replication lag. Additionally, Aurora automatically uses its replicas as failover targets with no data loss. Because these replicas share the same underlying storage as the primary, they lag behind the primary by only tens of milliseconds, making the performance nearly synchronous.
+
 
 https://read.acloud.guru/why-amazon-dynamodb-isnt-for-everyone-and-how-to-decide-when-it-s-for-you-aefc52ea9476
 https://news.ycombinator.com/item?id=14721920
 https://www.allthingsdistributed.com/2018/06/purpose-built-databases-in-aws.html
 https://opencredo.com/cassandra-good-bad-ugly-webinar-recording/
+https://www.youtube.com/watch?v=bCW3lhsJKfw
+https://aws.amazon.com/blogs/database/level-up-your-games-with-amazon-aurora/
 
 
