@@ -77,4 +77,10 @@ As a general rule, you should maintain as few tables as possible in a DynamoDB a
 Exceptions are cases where high-volume time series data are involved, or datasets that have very different access patterns—but these are exceptions. A single table with inverted indexes can usually enable simple queries to create and retrieve the complex hierarchical data structures required by your application.
 Data shape: Instead of reshaping data when a query is processed (as an RDBMS system does), a NoSQL database organizes data so that its shape in the database corresponds with what will be queried. This is a key factor in increasing speed and scalability.
 
+To better accommodate uneven access patterns, DynamoDB adaptive capacity enables your application to continue reading and writing to hot partitions without being throttled, provided that traffic does not exceed your table’s total provisioned capacity or the partition maximum capacity. Adaptive capacity works by automatically increasing throughput capacity for partitions that receive more traffic.
+Data Types - In addition to standard Scalar types like String and Number, DDB also supports document type (JSON Array and Object) and Sets.
+Other than the primary key, the Music table is schemaless, which means that neither the attributes nor their data types need to be defined beforehand. Each item can have its own distinct attributes.
+
+You can define up to 5 global secondary indexes and 5 local secondary indexes per table.
+
 
