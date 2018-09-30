@@ -2,9 +2,12 @@ A Comparison of different widely used data storage technologies - SQL (focussed 
 
 ## MySQL
 
-* Used by some of the largest content services in the world today e.g. Facebook, Quora, You Tube, Twitter  and GitHub to name a few
+* Used by some of the largest content services in the world today e.g. 
+  * Facebook, Quora, You Tube, Twitter  and GitHub to name a few
   * https://www.mysql.com/customers/
+
 * It’s robust, replication works and it’s easy to use and run
+
 * Aurora by AWS is a MySQL managed service which takes this one step further by providing many goodies OOTB
   * Redundant storage across AZ, multiple Read replicas with load balancing
   * Autoscaling storage, SSD based virtualized storage
@@ -18,7 +21,9 @@ A Comparison of different widely used data storage technologies - SQL (focussed 
 
 * In fact, one can go a long way by simply "scaling up" the instance with cpu cores and tons of ram + multiple read replicas. 
   * Reads can be fronted by a distributed caching like MemCache and DB has to deal mostly with writes. 
+
 * Tonnes of tribal knowledge available. Easy to find expert DBAs
+
 * Huge commuity, continuous improvement of the tech stack with contributions coming in from large adopters
 
 
@@ -50,6 +55,9 @@ Adam D'Angelo Quora CEO and Former Facebook CTO
   * Other providers : DataStax Enterprise https://www.datastax.com/ provides cassandra as a service with administration, monitoring, developer tooling etc.
 
 
+Dynamo DB
+
+
 Partitioned from ground up (both have fairly similar concept of partition and sort key)
 Work very well for key-lookup based workloads.
 Global and local Secondary indexes (in Dynamo) attempt to solve some of these issues.
@@ -68,7 +76,6 @@ This is a common pattern that comes out from Dynamo case studies one e.g. https:
 
 
 
-NoSQL (Cassandra DynamoDB)
 
 Planet Scale DBs - Spanner
 
