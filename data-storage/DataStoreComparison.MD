@@ -20,18 +20,16 @@ A Comparison of different widely used data storage technologies - SQL (focussed 
   * Using simple application based routing  
   * Using an off-the-shelf frameworks like MaxScale, ProxySQL, MySQLRouter, MySQL Fabric,  etc.
 
+
 * In fact, one can go a long way by simply "scaling up" the instance with cpu cores and tons of ram + multiple read replicas. 
   * Reads can be fronted by a distributed caching like MemCache and DB has to deal mostly with writes. 
 
 * Tonnes of tribal knowledge available. Easy to find expert DBAs
+  * Plenty of good examples on how to design and scale with flexible schema. e.g. [Uber Schemaless Design](https://eng.uber.com/schemaless-part-one/) and [Friendfeed's](https://backchannel.org/blog/friendfeed-schemaless-mysql)
 
 * Huge commuity, continuous improvement of the tech stack with contributions coming in from large adopters
-  * e.g. New features like JSON type to support documet style storge, index-able virtual generated columns 
+  * e.g. New features like JSON type to support document style storge, index-able virtual generated columns 
 
-
-
-> The primary online data store for an application is the worst place to take a risk with new technology. If you lose your database or there's corruption, it's a disaster that could be impossible to recover from. If you're not the developer of one of these new databases, and you're one of a very small number of companies using them at scale in production, you're at the mercy of the developer to fix bugs and handle scalability issues as they come up.     
-Adam D'Angelo Quora CEO and former Facebook CTO
 
 
 ## Cassandra
@@ -57,6 +55,9 @@ Adam D'Angelo Quora CEO and former Facebook CTO
   * Other providers : DataStax Enterprise https://www.datastax.com/ provides cassandra as a service with administration, monitoring, developer tooling etc.
 
 
+
+Appendix
+
 Dynamo DB
  
 
@@ -72,7 +73,7 @@ AWS doesn't offer this as managed service yet
 These are great solutions, especially Dynamo as AWS managed service and many bells and whistles like auto-scaling. Fantastic for key-lookup based workloads and its very easy to throw some data and start.  
 But once you need complex queries and needing to design data models around the underlying technology (like finding a well  distributed partition key) , one starts to feel the pain. Dynamo: Read and Write throughput can be tricky especially when the partition size grows and it splits.
 I haven't done calculation myself but there are many reports of customers reducing cost by 40-50% by moving from Dynamo to RDS/Aurora.
-https://www.youtube.com/watch?v=60QumD2QsF0&feature=youtu.be&t=17m01s
+
 Dynamo is definitely a great solution but as a supplementary store for specializd workloads, along side a RDBMS based primary data store.
 This is a common pattern that comes out from Dynamo case studies one e.g. https://aws.amazon.com/solutions/case-studies/duolingo-case-study-dynamodb/
 
@@ -86,7 +87,6 @@ Spanner is Google’s scalable, multi-version, globallydistributed, and synchron
 
 
 
-Appendix
 
 Basic rules of data modeling in Cassandra involve manually denormalizing data into separate tables based on the queries that will be run against that table. Currently, the only way to query a column without specifying the partition key is to use secondary indexes, but they are not a substitute for the denormalization of data into new tables as they are not fit for high cardinality data. High cardinality secondary index queries often require responses from all of the nodes in the ring, which adds latency to each request. Instead, client-side denormalization and multiple independent tables are used, which means that the same code is rewritten for many different users. In 3.0, Cassandra will introduce a new feature called Materialized Views. Materialized views handle automated server-side denormalization, removing the need for client side handling of this denormalization and ensuring eventual consistency between the base and view data. This denormalization allows for very fast lookups of data in each view using the normal Cassandra read path.
 
@@ -102,6 +102,14 @@ Not having to make decisions on how much storage to allocate to the database: De
 Unique Read Replicas: Aurora’s Read Replicas use the same underlying cluster volume as that of the primary. This approach allows for a reduced replication lag even when the replicas are launched in different Availability Zones. Aurora supports up to 15 replicas with minimal impact on the performance of write operations. In contrast, MySQL supports up to 5 replicas, which can impact the performance of write operations and exhibit some replication lag. Additionally, Aurora automatically uses its replicas as failover targets with no data loss. Because these replicas share the same underlying storage as the primary, they lag behind the primary by only tens of milliseconds, making the performance nearly synchronous.
 
 
+
+> The primary online data store for an application is the worst place to take a risk with new technology. If you lose your database or there's corruption, it's a disaster that could be impossible to recover from. If you're not the developer of one of these new databases, and you're one of a very small number of companies using them at scale in production, you're at the mercy of the developer to fix bugs and handle scalability issues as they come up.     
+Adam D'Angelo Quora CEO and former Facebook CTO
+
+
+
+https://www.youtube.com/watch?v=60QumD2QsF0
+https://www.datastax.com/dev/blog/basic-rules-of-cassandra-data-modeling
 https://read.acloud.guru/why-amazon-dynamodb-isnt-for-everyone-and-how-to-decide-when-it-s-for-you-aefc52ea9476
 https://news.ycombinator.com/item?id=14721920
 https://www.allthingsdistributed.com/2018/06/purpose-built-databases-in-aws.html
