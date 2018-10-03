@@ -1,19 +1,8 @@
-IO cost in aurora is much lower
-
-in dyanmo, when the table gets partitioned then your IO gets partitioned (hot partition can increase IO requirement)
-
-Aurora is charged based on used IO, not provisioned IO
-
-Large AWS Customers have reported a decrease in operational cost of up to 40% by moving from Dynamo to Aurora
-
-Ideas from NoSQL also getting implemented in SQL (quorum reads in Aurora for example)
+Dynamo is definitely a great solution but as a supplementary store for specializd workloads, along side a RDBMS based primary data store.
+This is a common pattern that comes out from Dynamo case studies one e.g. https://aws.amazon.com/solutions/case-studies/duolingo-case-study-dynamodb/
 
 
-
-
-
-
-DynamoDB accellarator (DAX) managed, clustered in-memory cache for DyanmoDB for read heavy and burst workloads.
+DynamoDB Accelerator(DAX) managed, clustered in-memory cache for DyanmoDB for read heavy and burst workloads.
 DAX is write through caching, data written to cache as well as DB. Allows you also to point DDB API calls to DAX cluster (returned if present). If not present, then it calls DDB eventually consistent read, adds to cache and returns. 
 Advantages
 Reduced read load on DDB
@@ -21,11 +10,9 @@ May be able to reduce provisioned read capacity
 
 Cassandra - 
 
+Dynamo
+Target low latency key based queries with high throughput and fast ingestion of data
 
-Fully managed
-Scale horizontally
-Built for denormalized hierarchichal views of data, these are the instantiated views 
-Essentially a Key value store that supports document attribute type
 Partition key = Mandatory key value access pattern , determines data distribution
 Sort key = Optional, Model 1:N relationship
 Scales to any workload
@@ -45,7 +32,7 @@ If sustained throughput goes beyond provisioned throughput then throttling is do
 Caused by non uniform workloads that cause hot keys
 Some design patterns , in case of time series data want to use table per time period
 Number 1 guideline : Create tables where the partition key element has a large number of distinct values and values are requested fairly and uniformly as randomly as possible
-Very similar to Cassandra in terms of data modeling - Table per Query , aggregate and keep everything together in one table which can be read in one shot (customer and orders together)
+
 Data modelling
 1) Hierarchical data structure as items - 1:N represented via sort key. index anything and scales to any size
 2) Store hierarchy as json attributes - Store JSON directly attributes. Indexing support only using DynamoDB streams, can be helpful in reducing WCU. Limited to 400KB total size
@@ -57,7 +44,7 @@ Design patterns stemming from the data uniformity
 Lambda as stored procedure but superior , no impact on data server
 Cache for read heavy lods like product catalog.
 Lightweight Transaction support using conditional writes.
-Configure secondary index with projections to create indexes that contain onlt the data you want and better utilize RCU
+Configure secondary index with projections to create indexes that contain only the data you want and better utilize RCU
 GSI costs, every time you update the main table, you pay WCU on the GSI
 
 
@@ -78,9 +65,27 @@ Exceptions are cases where high-volume time series data are involved, or dataset
 Data shape: Instead of reshaping data when a query is processed (as an RDBMS system does), a NoSQL database organizes data so that its shape in the database corresponds with what will be queried. This is a key factor in increasing speed and scalability.
 
 To better accommodate uneven access patterns, DynamoDB adaptive capacity enables your application to continue reading and writing to hot partitions without being throttled, provided that traffic does not exceed your table’s total provisioned capacity or the partition maximum capacity. Adaptive capacity works by automatically increasing throughput capacity for partitions that receive more traffic.
-Data Types - In addition to standard Scalar types like String and Number, DDB also supports document type (JSON Array and Object) and Sets.
 Other than the primary key, the Music table is schemaless, which means that neither the attributes nor their data types need to be defined beforehand. Each item can have its own distinct attributes.
 
 You can define up to 5 global secondary indexes and 5 local secondary indexes per table.
+
+A filter expression is applied after a Query finishes, but before the results are returned. Therefore, a Query will consume the same amount of read capacity, regardless of whether a filter expression is present.
+
+A Query operation can retrieve a maximum of 1 MB of data. This limit applies before the filter expression is evaluated.
+
+++++
+Basic rules of data modeling in Cassandra involve manually denormalizing data into separate tables based on the queries that will be run against that table. Currently, the only way to query a column without specifying the partition key is to use secondary indexes, but they are not a substitute for the denormalization of data into new tables as they are not fit for high cardinality data. High cardinality secondary index queries often require responses from all of the nodes in the ring, which adds latency to each request. Instead, client-side denormalization and multiple independent tables are used, which means that the same code is rewritten for many different users. In 3.0, Cassandra will introduce a new feature called Materialized Views. Materialized views handle automated server-side denormalization, removing the need for client side handling of this denormalization and ensuring eventual consistency between the base and view data. This denormalization allows for very fast lookups of data in each view using the normal Cassandra read path.
+
+In Cassandra everything is a write including logical deletion of data which results in tombstones.
+
+You can create an Amazon Aurora MySQL DB cluster as a Read Replica in a different AWS Region than the source DB cluster. Taking this approach can improve your disaster recovery capabilities, let you scale read operations into an AWS Region that is closer to your users, and make it easier to migrate from one AWS Region to another.
+
+https://www.datastax.com/customers
+Relatively immutable data, minimal updates and deletions (think time series, Sensor data etc.)
+
+Aurora
+Not having to make decisions on how much storage to allocate to the database: Deciding how much storage to allocate to your database, especially for production workloads is one decision that game developers (or developers and DBAs in general) don’t want to make. Allocate too little, and you end up running out of space when you need it the most, requiring you to put your game in maintenance mode while you upgrade. Allocate too much, and you are wasting money. With Aurora, data is stored in a cluster volume, which is a single, virtual volume that utilizes solid state disk (SSD) drives. A cluster volume consists of copies of the data across multiple Availability Zones in a single region. Aurora cluster volumes automatically grow as the amount of data in your database increases. An Aurora cluster volume can grow to a maximum size of 64 terabytes (TB). Table size is limited to the size of the cluster volume. That is, the maximum table size for a table in an Aurora DB cluster is 64 TB. Even though an Aurora cluster volume can grow to up to 64 TB, you are only charged for the space that you use in an Aurora cluster volume. You can start with a volume as small as 10 GB.
+Unique Read Replicas: Aurora’s Read Replicas use the same underlying cluster volume as that of the primary. This approach allows for a reduced replication lag even when the replicas are launched in different Availability Zones. Aurora supports up to 15 replicas with minimal impact on the performance of write operations. In contrast, MySQL supports up to 5 replicas, which can impact the performance of write operations and exhibit some replication lag. Additionally, Aurora automatically uses its replicas as failover targets with no data loss. Because these replicas share the same underlying storage as the primary, they lag behind the primary by only tens of milliseconds, making the performance nearly synchronous.
+
 
 

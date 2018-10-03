@@ -1,4 +1,4 @@
-A Comparison of different widely used data storage technologies - SQL (focussed on most popular choice -MySQL, NoSQL and New Kids (NewSQL?)
+A Comparison of different widely used data storage technologies - SQL (focussed on most popular choice -MySQL, NoSQL (Cassandra and DynamoDB) 
 
 ## MySQL
 
@@ -43,8 +43,9 @@ A Comparison of different widely used data storage technologies - SQL (focussed 
   * Automatically replicated (cross AZ,DC,Region)
 * Data Modelling - Support for collection data types like Map, Set, List as well as User Defined Type
 * High performance for Writes
-  * Works great for append only, read, no delete model
-  * Tombstones(special deletion records), cause heap pressure and other related issues		
+  * Works great for append only, relatively immutable data with minimal updates and deletions 
+  * Tombstones(special deletion records), cause heap pressure and other related issues	
+  * Row and Batch level atomicity for writes. Lightweight transaction support using conditional writes	
 * Table per Query model. Data duplication is okay, optimizing for data is anti pattern.
   * Create the same data in multiple tables to get secondary index. (Cassandra 3+ supports materialized views now which does the same job OOTB)
   * Proliferation of materialized views can become very common (In one of my services I have 6 different Materialized views for one table).
@@ -52,69 +53,87 @@ A Comparison of different widely used data storage technologies - SQL (focussed 
   * Monitoring the ring. Manual recovery and repair operations, understanding processes such as compaction, memtables, sstables etc.
   * Most companies running this at scale have build custom tools to manage Cassandra clusters
   * None of Big 3 AWS,GCP or Azure provide Cassandra as managed Service
-  * Other providers : DataStax Enterprise https://www.datastax.com/ provides cassandra as a service with administration, monitoring, developer tooling etc.
+  * Other providers : [DataStax Enterprise](https://www.datastax.com/) provides cassandra as a service with administration, monitoring, developer tooling etc.
+
+
+## AWS Dynamo DB
+* Fully managed by AWS, scales horizontally and built for denormalized views of data
+  * Essentially a Key value store that also supports document attribute type
+  * Schemaless Data Modelling with support for Scalar, Document (JSON) and Set types
+  * HTTP(S) API , no persistent connection
+* Proven to work at scale, Over 100K customers with large enterprise adoption - Lyft, AirBnB, Expedia, duolingo to name a few
+  * DynamoDB served over [12.9 million requests per second on AWS Prime day](https://aws.amazon.com/blogs/aws/prime-day-2017-powered-by-aws/)
+  * https://aws.amazon.com/solutions/case-studies/
+* "Table per Query" model, similar to Cassandra
+  * Aggregate and keep instantiated views in table which can be read in one shot (e.g. customer and orders together)
+  * Create Global and local secondary indexes for native filtering on non-key attributes
+  * GSI is similar to Cassandra Materialized views, a copy of original table. LSI is per partition
+  * Row(Item) level atomic writes. Lightweight Transaction support using conditional writes.
+* Throughput provisioning
+  * DyanmoDB provides two independent throughput control/knobs - Read capacity (RCU) and Write capacity (WCU)
+  * Provisioned on per Table/GSI basis
+  * RCU and WCU are table data are uniformly spread across partitions of the Table. See [partitioning math](#AWS-DynamoDB-Partitioning-Math) in Appendix
+  * If sustained throughput goes beyond provisioned throughput then throttling is done. - Most common cause is non-uniform workloads which cause "hot keys" i.e. bulk of traffic going to one partition
+    * [Adaptive Capacity](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/bp-partition-key-design.html#bp-partition-key-partitions-adaptive) can address this to some extent
+  * GSI provisioned throughput is separate from the provisioned throughput settings of the table.
+* Important Limits
+  * Item(Row) size, including LSI size, is limited to 400KB 
+  * 5 global secondary indexes and 5 local secondary indexes per table.
+* DynamoDB Accelerator(DAX)
+  * Managed, clustered in-memory cache for DyanmoDB for read heavy and burst workloads.
+  * Write through cache, can reduce RCU requirements for read heavy workloads
+* DyanmoDB Streams + Lambda
+  * Powerful execution framework to build real time aggregation or other views of your data
+  * Much superior to Stored procedures in RDBMS
+
+## Comparison 
+### Cost
+Its hard to quanitify without actual data and workload but in general Aurora is `~`20% more expensive than MySQL RDS.
+DynamoDB charging is based on provisioned IO unlike Aurora which is based on used IO. Note that GSI provisioned IO is separate from main table. Large AWS Customers have reported a decrease in operational cost of up to 40-50% by moving from Dynamo to Aurora.
+
+### Scaling
+All three solutions can scale linearly and provide HA when designed right.
+
+### Efficient Querying & Flexible Data Modelling
+MySQL would lead the pack being most flexible in terms how and what you want to index. Both Cassandra and DynamoDB indexes are materialized views (copy of main table). Note that primary goal for DynamoDB is low latency key based queries with high throughput and fast ingestion of data. DynamoDB schemaless nature provides more flexibility than MySQL but improvements like JSON type support in MySQL have bridged that gap. BTW, Don't consider Schemas to be all evil. Schemas enforce type on the persisted data of your application, they serve as documentation, and in many case would prevent bugs. 
+
+### Operational Complexity
+DyanmoDB and Aurora are AWS managed solutions with DynamoDB being fully managed (no need to choose instance types tc.). Most companies running Cassandra at scale have devised their own tools to manage the clusters. DataStax provides managed cassandra but with none of Big 3 (Azure,AWS,GCP), so its hard to see its adoption growing.
+
+
+### Trust and experience
+Can you trust the system with your mission critical data? Do you have enough experience in your teams with this technology? Is it easy or hard to find solution to the problems you encounter when using this system?
+MySQL wins hands down on these parameters. DynamoDB is a solid solution too but its proprietary in nature (and don't forget the cost :P)
+
+Its worth noting a quote from `Adam D'Angelo, Quora Founder and former Facebook CTO`
+> The primary online data store for an application is the worst place to take a risk with new technology. If you lose your database or there's corruption, it's a disaster that could be impossible to recover from. If you're not the developer of one of these new databases, and you're one of a very small number of companies using them at scale in production, you're at the mercy of the developer to fix bugs and handle scalability issues as they come up.
 
 
 
-Appendix
-
-Dynamo DB
+## Appendix
  
 
- (both have fairly similar concept of partition and sort key)
-Work very well for key-lookup based workloads.
-Global and local Secondary indexes (in Dynamo) attempt to solve some of these issues.
-Cassandra : 
- 
-Have had issues with too many Tombstones and deleted data re-appearing (WIPDM ran into this)
-AWS doesn't offer this as managed service yet
+##### AWS DynamoDB Partitioning Math
+  - By Capactity = (Total RCU)/3000 + (Total WCU)/1000
+  - By Size = Total Size/10 GB
+  - Total partitions = MAX(By Capacity, By Size)
+  - Example: 
+    - Table Size = 8GB, RCU=5K, WCU=0.5K
+    - = 3 Partition. RCU =5K/3= 1.7K per partition and WCU=0.5/3=166.7 and data per partition = 10/3= 3.33 GB
 
 
-These are great solutions, especially Dynamo as AWS managed service and many bells and whistles like auto-scaling. Fantastic for key-lookup based workloads and its very easy to throw some data and start.  
-But once you need complex queries and needing to design data models around the underlying technology (like finding a well  distributed partition key) , one starts to feel the pain. Dynamo: Read and Write throughput can be tricky especially when the partition size grows and it splits.
-I haven't done calculation myself but there are many reports of customers reducing cost by 40-50% by moving from Dynamo to RDS/Aurora.
-
-Dynamo is definitely a great solution but as a supplementary store for specializd workloads, along side a RDBMS based primary data store.
-This is a common pattern that comes out from Dynamo case studies one e.g. https://aws.amazon.com/solutions/case-studies/duolingo-case-study-dynamodb/
-
-
-
-
-Planet Scale DBs - Spanner
-
-Spanner is Google’s scalable, multi-version, globallydistributed, and synchronously-replicated database. It is the first system to distribute data at global scale and support externally-consistent distributed transactions
-
-
-
-
-
-Basic rules of data modeling in Cassandra involve manually denormalizing data into separate tables based on the queries that will be run against that table. Currently, the only way to query a column without specifying the partition key is to use secondary indexes, but they are not a substitute for the denormalization of data into new tables as they are not fit for high cardinality data. High cardinality secondary index queries often require responses from all of the nodes in the ring, which adds latency to each request. Instead, client-side denormalization and multiple independent tables are used, which means that the same code is rewritten for many different users. In 3.0, Cassandra will introduce a new feature called Materialized Views. Materialized views handle automated server-side denormalization, removing the need for client side handling of this denormalization and ensuring eventual consistency between the base and view data. This denormalization allows for very fast lookups of data in each view using the normal Cassandra read path.
-
-In Cassandra everything is a write including logical deletion of data which results in tombstones.
-
-You can create an Amazon Aurora MySQL DB cluster as a Read Replica in a different AWS Region than the source DB cluster. Taking this approach can improve your disaster recovery capabilities, let you scale read operations into an AWS Region that is closer to your users, and make it easier to migrate from one AWS Region to another.
-
-https://www.datastax.com/customers
-Relatively immutable data, minimal updates and deletions (think time series, Sensor data etc.)
-
-Aurora
-Not having to make decisions on how much storage to allocate to the database: Deciding how much storage to allocate to your database, especially for production workloads is one decision that game developers (or developers and DBAs in general) don’t want to make. Allocate too little, and you end up running out of space when you need it the most, requiring you to put your game in maintenance mode while you upgrade. Allocate too much, and you are wasting money. With Aurora, data is stored in a cluster volume, which is a single, virtual volume that utilizes solid state disk (SSD) drives. A cluster volume consists of copies of the data across multiple Availability Zones in a single region. Aurora cluster volumes automatically grow as the amount of data in your database increases. An Aurora cluster volume can grow to a maximum size of 64 terabytes (TB). Table size is limited to the size of the cluster volume. That is, the maximum table size for a table in an Aurora DB cluster is 64 TB. Even though an Aurora cluster volume can grow to up to 64 TB, you are only charged for the space that you use in an Aurora cluster volume. You can start with a volume as small as 10 GB.
-Unique Read Replicas: Aurora’s Read Replicas use the same underlying cluster volume as that of the primary. This approach allows for a reduced replication lag even when the replicas are launched in different Availability Zones. Aurora supports up to 15 replicas with minimal impact on the performance of write operations. In contrast, MySQL supports up to 5 replicas, which can impact the performance of write operations and exhibit some replication lag. Additionally, Aurora automatically uses its replicas as failover targets with no data loss. Because these replicas share the same underlying storage as the primary, they lag behind the primary by only tens of milliseconds, making the performance nearly synchronous.
-
-
-
-> The primary online data store for an application is the worst place to take a risk with new technology. If you lose your database or there's corruption, it's a disaster that could be impossible to recover from. If you're not the developer of one of these new databases, and you're one of a very small number of companies using them at scale in production, you're at the mercy of the developer to fix bugs and handle scalability issues as they come up.     
-Adam D'Angelo Quora CEO and former Facebook CTO
-
-
-
-https://www.youtube.com/watch?v=60QumD2QsF0
-https://www.datastax.com/dev/blog/basic-rules-of-cassandra-data-modeling
-https://read.acloud.guru/why-amazon-dynamodb-isnt-for-everyone-and-how-to-decide-when-it-s-for-you-aefc52ea9476
-https://news.ycombinator.com/item?id=14721920
-https://www.allthingsdistributed.com/2018/06/purpose-built-databases-in-aws.html
-https://opencredo.com/cassandra-good-bad-ugly-webinar-recording/
-https://www.youtube.com/watch?v=bCW3lhsJKfw
-https://aws.amazon.com/blogs/database/level-up-your-games-with-amazon-aurora/
-
+##### References
+* https://dev.mysql.com/doc/refman/5.7/en/json.html?ff=nopfpls
+* https://dev.mysql.com/doc/refman/5.7/en/create-table-generated-columns.html
+* https://www.youtube.com/watch?v=60QumD2QsF0
+* http://highscalability.com/blog/2011/12/19/how-twitter-stores-250-million-tweets-a-day-using-mysql.html
+* https://aws.amazon.com/blogs/database/level-up-your-games-with-amazon-aurora/
+* https://www.datastax.com/dev/blog/basic-rules-of-cassandra-data-modeling
+* https://opencredo.com/cassandra-good-bad-ugly-webinar-recording/
+* https://read.acloud.guru/why-amazon-dynamodb-isnt-for-everyone-and-how-to-decide-when-it-s-for-you-aefc52ea9476
+* https://news.ycombinator.com/item?id=14721920
+* https://www.allthingsdistributed.com/2018/06/purpose-built-databases-in-aws.html
+* https://www.youtube.com/watch?v=bCW3lhsJKfw
+* https://www.reddit.com/r/aws/comments/98xbpv/folks_dont_get_me_started_on_dynamodb/
+* https://www.percona.com/blog/2018/07/17/when-should-i-use-amazon-aurora-and-when-should-i-use-rds-mysql/
 
