@@ -1,4 +1,4 @@
-A Comparison of different widely used data storage technologies - SQL (focussed on most popular choice -MySQL, NoSQL (Cassandra and DynamoDB) 
+Notes on different widely used database technologies - SQL (focussed on most popular choice -MySQL, NoSQL (Cassandra and DynamoDB), GraphDB, and NewSQL (Spanner and Cosmos))
 
 ## MySQL
 
@@ -86,7 +86,7 @@ A Comparison of different widely used data storage technologies - SQL (focussed 
   * Powerful execution framework to build real time aggregation or other views of your data
   * Much superior to Stored procedures in RDBMS
 
-## Comparison 
+## Quick Comparison between SQL and NoSQL
 ### Cost
 Its hard to quanitify without actual data and workload but in general Aurora is `~`20% more expensive than MySQL RDS.
 DynamoDB charging is based on provisioned IO unlike Aurora which is based on used IO. Note that GSI provisioned IO is separate from main table. Large AWS Customers have reported a decrease in operational cost of up to 40-50% by moving from Dynamo to Aurora.
@@ -102,11 +102,15 @@ DyanmoDB and Aurora are AWS managed solutions with DynamoDB being fully managed 
 
 
 ### Trust and experience
-Can you trust the system with your mission critical data? Do you have enough experience in your teams with this technology? Is it easy or hard to find solution to the problems you encounter when using this system?
+Can you trust the system to be stable at scale? Do you have enough experience in your teams with this technology? Is it easy or hard to find solution to the problems you encounter when using this system?
 MySQL wins hands down on these parameters. DynamoDB is a solid solution too but its proprietary in nature (and don't forget the cost :P)
 
-Its worth noting a quote from `Adam D'Angelo, Quora Founder and former Facebook CTO`
-> The primary online data store for an application is the worst place to take a risk with new technology. If you lose your database or there's corruption, it's a disaster that could be impossible to recover from. If you're not the developer of one of these new databases, and you're one of a very small number of companies using them at scale in production, you're at the mercy of the developer to fix bugs and handle scalability issues as they come up.
+
+## Graph Database: Neo4J
+TBD
+
+## NewSQL: Cosmos
+TBD
 
 
 
