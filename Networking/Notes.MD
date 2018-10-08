@@ -1,20 +1,29 @@
-Networking Notes
-Hub : Purpose is to connect all devices on an internal network. Its a device that has multiple ethernet ports where device connect by wire. Traffic coming at any one port is routed to ALL ports.
+# Networking Notes
+## Basic Devices
+### Hub 
+* Purpose is to connect all devices on an internal network. 
+* Its a device that has multiple ethernet ports where device connect by wire. 
+* Traffic coming at any one port is routed to ALL ports.
 
-Switch : Same as hub except it tracks the MAC address of devices connected to it. So traffic is only sent to intended port and hence intended device.
-Hubs and Switches are used to exchange data inside a local area network like home or business. Not used to exchange data outside their network.
+### Switch 
+* Same as hub except it tracks the MAC address of devices connected to it. 
+* So traffic is only sent to intended port and hence intended device.
 
-ARP : Address resolution protocol. Host sends broadcast to all others asking the Mac Address corresponding to an IP address. For ethernet connection, IP packet which contain src and dest IP are wrapped in an ethernet frame which has src and dest Mac Address
+Modem : Modulator/de-modulator. Needed to connect to internet because computer generate digital signal but the data travels on internet as analog. So in home the entry point is Modem. Multiple devices connect to Modem using a Router which is generally a combination of router and switch. This kind of router provides ethernet as well as wireless. Common types of Modem are DSL and cable. DSL=phone line. Ours is cable. Many times its a Modem+builtin wireless router. In addition most routers will have a builtin switch inside of them.
+https://www.youtube.com/watch?v=Mad4kQ5835Y
+
+```Hubs and Switches are used to exchange data inside a local area network like home or business. They are not used to exchange data outside their network.```
+
 
 Router : Routes data from one network to another based on IP address. Important to understand that routers connect separate networks. Its essentially the gateway of the network. When a data packet arrives at the router, it checks if its meant for its network, if yes then it recieves it otherwise it sends it off to another router.	So Routers by definition have two interfaces.
 
 In essence, Hubs and switches create network while routers are used to connect networks.
 Also Switches work at ethernet layer (2) whereas Routers at IP layer (3). 
 
+ARP : Address resolution protocol. Host sends broadcast to all others asking the Mac Address corresponding to an IP address. For ethernet connection, IP packet which contain src and dest IP are wrapped in an ethernet frame which has src and dest Mac Address
+
 Source: https://www.youtube.com/watch?v=1z0ULvg_pW8
 
-Modem : Modulator/de-modulator. Needed to connect to internet because computer generate digital signal but the data travels on internet as analog. So in home the entry point is Modem. Multiple devices connect to Modem using a Router which is generally a combination of router and switch. This kind of router provides ethernet as well as wireless. Common types of Modem are DSL and cable. DSL=phone line. Ours is cable. Many times its a Modem+builtin wireless router. In addition most routers will have a builtin switch inside of them.
-https://www.youtube.com/watch?v=Mad4kQ5835Y
 
 IP address has two parts : first part is network address and second part is host address. two types , public and private . Public IP is registered and can be used to directly access the internet. Can't do that with private IP. 
 
