@@ -147,4 +147,119 @@ mysql> select vend_id, count(*) as numc from products where prod_price >4 group 
 2 rows in set (0.00 sec)
 ```
 
+* Sub-Queries
+  * Find all customers who have ordered product RGAN01: 
+
+```js
+SELECT cust_id
+
+FROM Orders
+
+WHERE order_num IN (SELECT order_num
+
+                    FROM OrderItems
+
+                    WHERE prod_id = 'RGAN01');
+  ```
+
+  * Tables are :
+
+ ```js
+  mysql> select * from orders;
++-----------+---------------------+------------+
+| order_num | order_date          | cust_id    |
++-----------+---------------------+------------+
+|     20005 | 2012-05-01 00:00:00 | 1000000001 |
+|     20006 | 2012-01-12 00:00:00 | 1000000003 |
+|     20007 | 2012-01-30 00:00:00 | 1000000004 |
+|     20008 | 2012-02-03 00:00:00 | 1000000005 |
+|     20009 | 2012-02-08 00:00:00 | 1000000001 |
++-----------+---------------------+------------+
+5 rows in set (0.00 sec)
+
+mysql> select * from orderitems;
++-----------+------------+---------+----------+------------+
+| order_num | order_item | prod_id | quantity | item_price |
++-----------+------------+---------+----------+------------+
+|     20005 |          1 | BR01    |      100 |       5.49 |
+|     20005 |          2 | BR03    |      100 |      10.99 |
+|     20006 |          1 | BR01    |       20 |       5.99 |
+|     20006 |          2 | BR02    |       10 |       8.99 |
+|     20006 |          3 | BR03    |       10 |      11.99 |
+|     20007 |          1 | BR03    |       50 |      11.49 |
+|     20007 |          2 | BNBG01  |      100 |       2.99 |
+|     20007 |          3 | BNBG02  |      100 |       2.99 |
+|     20007 |          4 | BNBG03  |      100 |       2.99 |
+|     20007 |          5 | RGAN01  |       50 |       4.49 |
+|     20008 |          1 | RGAN01  |        5 |       4.99 |
+|     20008 |          2 | BR03    |        5 |      11.99 |
+|     20008 |          3 | BNBG01  |       10 |       3.49 |
+|     20008 |          4 | BNBG02  |       10 |       3.49 |
+|     20008 |          5 | BNBG03  |       10 |       3.49 |
+|     20009 |          1 | BNBG01  |      250 |       2.49 |
+|     20009 |          2 | BNBG02  |      250 |       2.49 |
+|     20009 |          3 | BNBG03  |      250 |       2.49 |
++-----------+------------+---------+----------+------------+
+```
+* Subqueries are always processed starting with the innermost SELECT statement and working outward.
+* More nested subqueries -
+```js
+SELECT cust_name, cust_contact
+
+FROM Customers
+
+WHERE cust_id IN (SELECT cust_id
+
+                  FROM Orders
+
+                  WHERE order_num IN (SELECT order_num
+
+                                      FROM OrderItems
+
+                                      WHERE prod_id =
+
+                                            'RGAN01'));
+```
+* Using sub query for calculated fields
+
+```js
+SELECT cust_name,
+
+       cust_state,
+
+       (SELECT COUNT(*)
+
+        FROM Orders
+
+        WHERE Orders.cust_id = Customers.cust_id) AS orders
+
+FROM Customers
+
+ORDER BY cust_name;
+```
+* Example above :pointup
+  * note : Orders is a calculated field that is set by a subquery that is provided in parentheses. 
+  * That subquery is executed once for every customer retrieved. 
+  * In the example above, the subquery is executed five times because five customers were retrieved.
+
+* JOIN
+  * Simply put, a join is a mechanism used to associate tables within a SELECT statement (and thus the name join). 
+    * When you join two tables, what you are actually doing is pairing every row in the first table with every row in the second table. The WHERE clause acts as a filter to only include rows that match the specified filter condition—the join condition, in this case. Without the WHERE clause, every row in the first table will be paired with every row in the second table, regardless of if they logically go together or not.
+  * INNER JOIN = EQUI JOIN
+  * Can be written as
+  ```js
+  SELECT vend_name, prod_name, prod_priceFROM Vendors, ProductsWHERE Vendors.vend_id = Products.vend_id;
+  ```
+  OR
+  ```js
+  SELECT vend_name, prod_name, prod_priceFROM Vendors INNER JOIN Products ON Vendors.vend_id = Products.vend_id;
+  ```
+  
+
+
+
+
+
+
+
 

@@ -18,7 +18,7 @@ Notes on different widely used database technologies - SQL (focussed on most pop
 * MySQL scalability isn't an issue, if you partition the data at the application level. And there are many ways to do it -
 
   * Using simple application based routing  
-  * Using an off-the-shelf frameworks like MaxScale, ProxySQL, MySQLRouter, MySQL Fabric,  etc.
+  * Using an off-the-shelf frameworks like MaxScale, [ProxySQL](https://proxysql.com/), [MySQLRouter](https://dev.mysql.com/doc/mysql-router/8.0/en/), MySQL Fabric,  etc.
 
 
 * In fact, one can go a long way by simply "scaling up" the instance with cpu cores and tons of ram + multiple read replicas. 
