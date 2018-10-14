@@ -1,13 +1,14 @@
-* Primary Key
-  * Any column in a table can be established as the primary key, as long as it meets the following conditions:
-  * No two rows can have the same primary key value.
-  * Every row must have a primary key value. (Primary key columns may not allow NULL values.)
-  * Values in primary key columns should never be modified or updated.
-  * Primary key values should never be reused. (If a row is deleted from the table, its primary key may not be assigned to any new rows in the future.)
+### Primary Key
+* Any column in a table can be established as the primary key, as long as it meets the following conditions:
+* No two rows can have the same primary key value.
+* Every row must have a primary key value. (Primary key columns may not allow NULL values.)
+* Values in primary key columns should never be modified or updated. Most DBMSs won’t enable this, but even otherwise its not considered a good practice.
+* Primary key values should never be reused. (If a row is deleted from the table, its primary key may not be assigned to any new rows in the future.)
 
-* SQL statements 
+### SQL statements 
   * are case-insensitive
   * However, be aware that while the SQL language is case-insensitive, the names of tables, columns, and values may not be (that depends  on your DBMS and how it is configured).
+
 * DISTINCT keyword 
   * instructs the database to only return distinct values. ` SELECT DISTINCT vend_idFROM Products;`
   * The DISTINCT keyword applies to all columns, not just the one it precedes. 
@@ -254,7 +255,150 @@ ORDER BY cust_name;
   ```js
   SELECT vend_name, prod_name, prod_priceFROM Vendors INNER JOIN Products ON Vendors.vend_id = Products.vend_id;
   ```
-  
+  * Can join multiple tables
+
+```js
+ SELECT prod_name, vend_name, prod_price, quantity
+
+FROM OrderItems, Products, Vendors
+
+WHERE Products.vend_id = Vendors.vend_id
+
+ AND OrderItems.prod_id = Products.prod_id
+
+ AND order_num = 20007;
+  ```
+* Table Alias and self join
+```js
+SELECT c1.cust_id, c1.cust_name, c1.cust_contact
+
+FROM Customers AS c1, Customers AS c2
+
+WHERE c1.cust_name = c2.cust_name
+
+ AND c2.cust_contact = 'Jim Jones';
+ ```
+
+ * Outer join - Also include rows from the (left or right table) where there is no data present
+ ```js
+ mysql> SELECT Customers.cust_id, Orders.order_num FROM Customers LEFT OUTER JOIN Orders ON Customers.cust_id=Orders.cust_id ; 
++------------+-----------+
+| cust_id    | order_num |
++------------+-----------+
+| 1000000001 |     20005 |
+| 1000000001 |     20009 |
+| 1000000002 |      NULL |
+| 1000000003 |     20006 |
+| 1000000004 |     20007 |
+| 1000000005 |     20008 |
++------------+-----------+
+```
+### UNION
+* A UNION must be composed of two or more SELECT statements, each separated by the keyword UNION (so, if combining four SELECT statements there would be three UNION keywords used). the select can be from different tables
+* Each query in a UNION must contain the same columns, expressions, or aggregate functions (and some DBMSs even require that columns be listed in the same order). 
+* Column datatypes must be compatible: They need not be the exact same type, but they must be of a type that the DBMS can implicitly convert (for example, different numeric types or different date types).
+```js
+mysql> select cust_id from customers UNION select cust_id from orders;
++------------+
+| cust_id    |
++------------+
+| 1000000001 |
+| 1000000002 |
+| 1000000003 |
+| 1000000004 |
+| 1000000005 |
++------------+
+```
+* UNION removes duplicate rows like Set functions. Use UNION ALL if duplicates are desired
+* SELECT statement output is sorted using the ORDER BY clause. When combining queries with a UNION only one ORDER BY clause may be used, and it must occur after the final SELECT statement. 
+
+### INSERT
+* Insert into tablename (column list) values(value list corresponding to column list)
+* Can omit the column or value if not needed, if null value is allowed for column
+* INSERT SELECT - Import(Append) data from a table into existing table
+```js
+INSERT INTO Customers(cust_id,
+
+                      cust_contact,
+
+                      cust_email,
+
+                      cust_name,
+
+                      cust_address,
+
+                      cust_city,
+
+                      cust_state,
+
+                      cust_zip,
+
+                      cust_country)
+
+SELECT cust_id,
+
+       cust_contact,
+
+       cust_email,
+
+       cust_name,
+
+       cust_address,
+
+       cust_city,
+
+       cust_state,
+
+       cust_zip,
+
+       cust_country
+
+FROM CustNew;
+```
+* The SELECT statement used in an INSERT SELECT can include a WHERE clause to filter the data to be inserted.
+* Export i.e. create a new table by exporting data from one or more tables
+  * `CREATE TABLE CustCopy ASSELECT * FROM Customers;`
+  * Any SELECT options and clauses may be used including WHERE and GROUP BY.
+  * Joins may be used to insert data from multiple tables.
+  * Data may only be inserted into a single table regardless of how many tables the data was retrieved from.
+
+### DELETE
+* When foreign keys are present, the DBMS uses them to enforce referential integrity. For example, if you tried to insert a new product into the Products table, the DBMS would not allow you to insert it with an unknown vendor id because the vend_id column is connected to the Vendors table as a foreign key. So what does this have to do with DELETE? Well, a nice side effect of using foreign keys to ensure referential integrity is that the DBMS usually prevents the deletion of rows that are needed for a relationship. For example, if you tried to delete a product from Products that was used in existing orders in OrderItems, that DELETE statement would throw an error and would be aborted. 
+  * DBMSs support a feature called cascading delete. If enabled, this feature deletes all related data when a row is deleted from a table. For example, if cascading delete is enabled and a customer is deleted from the Customers table, any related order rows are deleted automatically.
+* The DELETE statement deletes rows from tables, even all rows from tables. But DELETE never deletes the table itself. If you really do want to delete all rows from a table, don’t use DELETE. Instead, use the TRUNCATE TABLE statement which accomplished the same thing but does it much quicker (because data changes are not logged).
+*  Never execute an UPDATE or a DELETE without a WHERE clause unless you really do intend to update and delete every row.
+
+
+### VIEWS
+* view creation syntax is supported pretty consistently by all the major DBMSs.
+* Most common use is to hide complex queries. Other reason is to change data formatting and representation. Views can return data formatted and presented differently from their underlying tables.
+* Views are generally not optimized and may be executing query or creating temporary tables(see DBMS documentation) e.g. MySQL : https://www.percona.com/blog/2007/08/12/mysql-view-as-performance-troublemaker/
+
+### CURSORS
+* A cursor is a database query stored on the DBMS server—not a SELECT statement, but the result set retrieved by that statement. Once the cursor is stored, applications can scroll or browse up and down through the data as needed.
+* Not used much in web apps since its the server talking to DB
+
+### Foreign Key
+* A foreign key is a column in a table whose values must be listed in a primary key in another table. 
+* Provide referential integrity
+
+### Unique Constraints
+* A table can contain multiple unique constraints, but only one primary key is allowed per table.
+* Unique constraint columns can contain NULL values.
+* Unique constraint columns can be modified or updated.
+* Unique constraint column values can be reused.
+* Unlike primary keys, unique constraints cannot be used to define foreign keys.
+
+### Index
+* PK is always indexed
+* Multiple columns can be defined in an index (for example, State plus City). Such an index will be of use only when data is sorted in State plus City order. (If you want to sort by City, this index would not be of any use.)
+
+### SQL Datatype
+* You might think that phone numbers and ZIP codes should be stored in numeric fields (after all, they only store numeric data), but doing so would not be advisable. If you store the ZIP code 01234 in a numeric field, the number 1234 would be saved. You’d actually lose a digit.The basic rule to follow is: If the number is a number used in calculations (sums, averages, and so on), it belongs in a numeric datatype column. If it is used as a literal string (that happens to contain only digits), it belongs in a string datatype column.
+
+
+
+
 
 
 
