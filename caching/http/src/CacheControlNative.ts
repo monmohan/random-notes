@@ -18,7 +18,8 @@ export default class CacheControlNative {
   }
   pageHandler = (request: http.IncomingMessage, response: http.ServerResponse) => {
     var fileStream = fs.createReadStream('/Users/monmohans/code/github.com/random-notes/caching/http/src/resources.html', "UTF-8");
-    response.writeHead(200, { "Content-Type": "text/html" });
+    response.writeHead(200, { "Content-Type": "text/html", "Cache-Control": "no-cache" });
+
     fileStream.pipe(response);
 
   }

@@ -1,6 +1,9 @@
 import http = require('http');
 import express = require('express');
-
+/**
+ * This class uses express which does some extra work in terms of managing the headers returned in the call
+ * 
+ */
 export default class CacheControlMaxAge {
   static app = express();
   startServer() {
