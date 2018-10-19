@@ -1,0 +1,41 @@
+<html>
+
+<body>
+    <h1>Resources</h1>
+    <h2>Navigating to resources</h2>
+    <p>1. Load resource with max-age <a href="/maxage"> Resource with Cache-Contorl: max-age</a></p>
+    <p>2. Resource with Last Modifier <a href="/lastmod"> Resource with Last Modifier</a></p>
+
+    <form>
+        <label for="verse-choose">Choose a Resource</label>
+        <select id="verse-choose" name="verse-choose">
+            <option>maxage</option>
+            <option>lastmod</option>
+        </select>
+    </form>
+    <p>
+        <div id="disp"></div>
+    </p>
+
+    <script>
+        var choice = document.querySelector('select');
+        var disp = document.getElementById("disp")
+        choice.onchange = function () {
+            updateDisplay(choice.value);
+        };
+
+        function updateDisplay(v) {
+            var url = '/'+v;
+            var request = new XMLHttpRequest();
+            request.open('GET', url);
+            request.responseType = 'text';
+            request.onload = function () {
+                console.log(request.response)
+                disp.innerHTML = request.response;
+            };
+            request.send();
+        };
+    </script>
+</body>
+
+</html>
