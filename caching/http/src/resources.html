@@ -1,5 +1,9 @@
 <html>
 
+<head>
+    <link rel="icon" href="data:,">
+</head>
+
 <body>
     <h1>Resources</h1>
     <h2>Navigating to resources</h2>
@@ -9,6 +13,7 @@
     <form>
         <label for="verse-choose">Choose a Resource</label>
         <select id="verse-choose" name="verse-choose">
+            <option>options</option>
             <option>maxage</option>
             <option>lastmod</option>
         </select>
@@ -18,6 +23,7 @@
     </p>
 
     <script>
+        var lmt = {};
         var choice = document.querySelector('select');
         var disp = document.getElementById("disp")
         choice.onchange = function () {
@@ -25,12 +31,18 @@
         };
 
         function updateDisplay(v) {
-            var url = '/'+v;
+            var url = '/' + v;
             var request = new XMLHttpRequest();
+            console.log(`Sending request for ${url}, lmt=${JSON.stringify(lmt)}`)
             request.open('GET', url);
+            if (lmt[v]) {
+                request.setRequestHeader("If-Modified-Since", lmt[v]);
+            }
             request.responseType = 'text';
+
             request.onload = function () {
-                console.log(request.response)
+                lmt[v] = request.getResponseHeader("Last-Modified");
+                console.log(`Response status = ${request.status} , LMT= ${JSON.stringify(lmt)}`)
                 disp.innerHTML = request.response;
             };
             request.send();

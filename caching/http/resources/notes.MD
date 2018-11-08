@@ -41,3 +41,6 @@ server.
 RFC7234	: The "max-age" response directive indicates that the response is to be considered stale after its age is greater than the specified number
 of seconds.	
 
+The Last-Modified entity-header field indicates the date and time at which the origin server believes the variant was last modified.
+Example of the header 
+       Last-Modified: Tue, 15 Nov 1994 12:45:26 GMT
