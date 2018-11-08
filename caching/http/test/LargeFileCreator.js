@@ -1,3 +1,4 @@
+//run node test/LargeFileCreator.js to create the file
 const fs = require('fs');
 const file = fs.createWriteStream('./largefile.txt');
 let txt=`access, adduser, audit, bin, bugs, c, cache, ci, cit,
