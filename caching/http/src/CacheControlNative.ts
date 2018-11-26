@@ -21,7 +21,7 @@ export default class CacheControlNative {
     this.pageHandler(request, response)
   }
   refreshLasMod() {
-    //refresh every one minute
+    //refresh interval check
     if (Date.now() - this.lastModDate > this.refreshInterval) {
       this.lastModDate = Date.now();
     }
@@ -65,6 +65,11 @@ export default class CacheControlNative {
     let isFresh = ifModSince && (this.lastModDate <= Date.parse(ifModSince));
 
     response.setHeader('Content-Type', 'text/html');
+    /**
+     * Without this header, Browser would apply heuristic to determine an expiration.
+     * Adding "no-cache" directive forces them to always re-validate with the server
+     */
+    //response.setHeader('Cache-Control', 'no-cache');
     response.setHeader('Last-Modified', new Date(this.lastModDate).toISOString());
 
     if (isFresh) {
@@ -73,7 +78,7 @@ export default class CacheControlNative {
       response.end()// no body
     } else {
       response.statusCode = 200;
-      response.end("The awesome resource with last mod date fixed")
+      response.end("The awesome resource with last mod date set")
     }
 
 

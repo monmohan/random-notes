@@ -10,7 +10,7 @@
   * However, be aware that while the SQL language is case-insensitive, the names of tables, columns, and values may not be (that depends  on your DBMS and how it is configured).
 
 * DISTINCT keyword 
-  * instructs the database to only return distinct values. ` SELECT DISTINCT vend_idFROM Products;`
+  * instructs the database to only return distinct values. ` SELECT DISTINCT vend_id FROM Products;`
   * The DISTINCT keyword applies to all columns, not just the one it precedes. 
   * If you were to specify `SELECT DISTINCT vend_id, prod_price,` all rows would be retrieved unless both of the specified columns were distinct.
 
@@ -19,26 +19,26 @@
   * For next 5 : `SELECT prod_name FROM Products LIMIT 5 OFFSET 5;`
 
 * Sort 
-  * e.g. Sorts the products by price in descending order (most expensive first): `SELECT prod_id, prod_price, prod_nameFROM ProductsORDER BY prod_price DESC;`
+  * e.g. Sorts the products by price in descending order (most expensive first): `SELECT prod_id, prod_price, prod_name FROM Products ORDER BY prod_price DESC;`
   * In dictionary sort order, A is treated the same as a, and that is the default behavior for most Database Management Systems. However, most good DBMSs enable database administrators to change this behavior if needed. (If your database contains lots of foreign language characters, this might become necessary.)
 * WHERE clause : 
   * The single quotes are used to delimit a string. If you are comparing a value against a column that is a string datatype, the delimiting quotes are required. Quotes are not used to delimit values used with numeric columns.
-  `SELECT vend_id, prod_nameFROM ProductsWHERE vend_id != 'DLL01';`
+  `SELECT vend_id, prod_name FROM Products WHERE vend_id != 'DLL01';`
   * Use AND, OR operator : `SELECT prod_id, prod_price, prod_nameFROM ProductsWHERE vend_id = 'DLL01' AND prod_price <= 4;`
   * Whenever you write WHERE clauses that use both AND and OR operators, use parentheses to explicitly group operators. 
 * IN : 
   * A keyword used in a WHERE clause to specify a list of values to be matched using an OR comparison. 
-  * Example : `SELECT prod_name, prod_priceFROM ProductsWHERE vend_id  IN ('DLL01','BRS01')ORDER BY prod_name;`
-    * Its same as : `SELECT prod_name, prod_priceFROM ProductsWHERE vend_id  = 'DLL01' OR vend_id = 'BRS01'ORDER BY prod_name;`
+  * Example : `SELECT prod_name, prod_price FROM Products WHERE vend_id  IN ('DLL01','BRS01')ORDER BY prod_name;`
+    * Its same as : `SELECT prod_name, prod_price FROM Products WHERE vend_id  = 'DLL01' OR vend_id = 'BRS01' ORDER BY prod_name;`
   * Advantage compared to OR? - IN operator can contain another SELECT statement, enabling you to build highly dynamic WHERE clauses.
 * NOT
   * NOT operator has one function and one function only—NOT negates whatever condition comes next. 
-  * e.g. `SELECT prod_nameFROM ProductsWHERE NOT vend_id  = 'DLL01'ORDER BY prod_name;`
+  * e.g. `SELECT prod_name FROM Products WHERE NOT vend_id  = 'DLL01' ORDER BY prod_name;`
   * NOT is useful in more complex clauses. For example, using NOT in conjunction with an IN operator makes it simple to find all rows that do not match a list of criteria.
 
 * Wildcard searching 
   * can only be used with text fields (strings), you can’t use wildcards to search fields of non-text datatypes.
-  * e.g. `SELECT prod_id, prod_nameFROM ProductsWHERE prod_name LIKE 'Fish%';`
+  * e.g. `SELECT prod_id, prod_name FROM Products WHERE prod_name LIKE 'Fish%';`
   * Depending on our DBMS and how it is configured, searches may be case-sensitive, in which case 'fish%' would not match Fish bean bag toy.
   * % represents zero, one, or more characters at the specified location in the search pattern.
   * The underscore is used just like %, but instead of matching multiple characters the underscore matches just a single character.
@@ -54,7 +54,7 @@
 * Aggregate Functions
   * Functions that operate on a set of rows to calculate and return a single value.
   * AVG, COUNT, MAX, MIN, SUM
-  * can be combined : `SELECT COUNT(*) AS num_items,       MIN(prod_price) AS price_min,       MAX(prod_price) AS price_max,       AVG(prod_price) AS price_avgFROM Products;`
+  * can be combined : `SELECT COUNT(*) AS num_items, MIN(prod_price) AS price_min, MAX(prod_price) AS price_max, AVG(prod_price) AS price_avg FROM Products;`
 * Grouping
   * Grouping lets you divide data into logical sets so that you can perform aggregate calculations on each group.
   * Every column listed in GROUP BY must be a retrieved column or a valid expression (but not an aggregate function). If an expression is used in the SELECT, that same expression must be specified in GROUP BY. Aliases cannot be used.
