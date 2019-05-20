@@ -41,6 +41,8 @@ Step 9 : Client handshake finished
 Step 10: Server change cipher spec
 Step 11: Server handshake finished
 
+TLS 1.3
+In the earlier version, handshake requires two round trips. One for the Hellos and other for key exchange and change of cipher spec. In 1.3 all this is done within the one roundtrip. Also, TLS compression is no longer supported.
 
 X.509
 An SSL/TLS certificate is one of the most popular types of X.509 certificates, or a type of public key certificate which uses the X.509 standard. X.509 certificates contain a public key and the identity of a hostname, organization, or individual
